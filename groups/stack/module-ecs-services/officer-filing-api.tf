@@ -1,8 +1,3 @@
-locals {
-  service_name = "officer-filing-api"
-  officer_filing_api_proxy_port = 11000 # local port number defined for proxy target of officer-filing-api service sitting behind eric
-}
-
 resource "aws_ecs_service" "officer-filing-api-ecs-service" {
   name            = "${var.environment}-${local.service_name}"
   cluster         = var.ecs_cluster_id
@@ -14,56 +9,6 @@ resource "aws_ecs_service" "officer-filing-api-ecs-service" {
     container_port   = var.officer_filing_api_application_port
     container_name   = "eric" # [ALB -> target group -> eric -> officer filing api] so eric container named here
   }
-}
-
-locals {
-  definition = merge(
-    {
-      service_name               : local.service_name
-      environment                : var.environment
-      name_prefix                : var.name_prefix
-      aws_region                 : var.aws_region
-      external_top_level_domain  : var.external_top_level_domain
-      account_subdomain_prefix   : var.account_subdomain_prefix
-      log_level                  : var.log_level
-      docker_registry            : var.docker_registry
-      cookie_domain              : var.cookie_domain
-      cookie_name                : var.cookie_name
-
-      # eric specific configs
-      eric_port                      : var.officer_filing_api_application_port # eric needs to be the first service in the chain from ALB
-      eric_version                   : var.eric_version
-      eric_cache_url                 : var.eric_cache_url
-      eric_cache_max_connections     : var.eric_cache_max_connections
-      eric_cache_max_idle            : var.eric_cache_max_idle
-      eric_cache_idle_timeout        : var.eric_cache_idle_timeout
-      eric_cache_ttl                 : var.eric_cache_ttl
-      eric_flush_interval            : var.eric_flush_interval
-      eric_graceful_shutdown_period  : var.eric_graceful_shutdown_period
-      eric_default_rate_limit        : var.eric_default_rate_limit
-      eric_default_rate_limit_window : var.eric_default_rate_limit_window
-
-      # api configs      
-      internal_api_url                   : var.internal_api_url
-      api_url                            : var.api_url
-
-      # officer-filing-api specific configs
-      officer_filing_api_release_version : var.officer_filing_api_release_version
-      officer_filing_api_proxy_port      : local.officer_filing_api_proxy_port
-      officer_filing_api_url             : var.officer_filing_api_url
-      oauth2_redirect_uri        : var.oauth2_redirect_uri
-      oauth2_token_uri           : var.oauth2_token_uri
-      cdn_host                   : var.cdn_host
-      chs_url                    : var.chs_url
-      account_url                : var.account_url
-      monitor_url                : var.monitor_url
-      cache_pool_size            : var.cache_pool_size
-      cache_server               : var.cache_server
-      default_session_expiration : var.default_session_expiration
-      refund_upload_timeout      : var.refund_upload_timeout
-    },
-      var.secrets_arn_map
-  )
 }
 
 resource "aws_ecs_task_definition" "officer-filing-api-task-definition" {
